@@ -1,0 +1,63 @@
+# WARNING: there's current no checks for bad data types in the config, so only run
+# the program when there's correct data types for normal behavior. Will fix this later...
+
+i_read_the_config_warning: false
+
+
+# website max timeout duration (int) -
+
+# this is the number of seconds the program waits for rpm2park.com to load before it fails and gives up
+timeout: 15
+
+
+# program flags (bools) -
+
+# if true, a screenshot is saved
+# if false, a screenshot will temporarily be saved for send_screenshot_in_discord,
+# and then the screenshot will be permanently deleted after the screenshot is sent
+save_screenshot_of_permit:  false
+
+# if true, the saved screenshot is sent in the discord channel by the discord bot below
+# if false, no action occurs
+send_screenshot_in_discord: false
+
+
+# if true, the program schedule's itself to run again when the permit is set to expire using Task Scheduler
+# if false, no action occurs
+# NOT IMPLEMENTED YET
+automatically_renew_permit: false
+
+
+# location information (strings) -
+
+# the property names are listed under the "Where are you parking?" dropdown on rpm2park.com's first page
+# e.g. "600 EAST"
+property_location:    "600 EAST"
+# THIS IS A STRING the apartment number of where you're staying, e.g. "1213"
+apartment_number_str: "0000"
+
+
+# car information (strings) -
+
+# license plate number goes here, e.g. "ABC1234"
+plate_number:  "ABC1234"
+# car manufacturer goes here, e.g. "TOYOTA"
+vehicle_make:  "TOYOTA"
+# model of car goes here, e.g. "COROLLA"
+vehicle_model: "COROLLA"
+# car's color goes here, e.g. "WHITE"
+vehicle_color: "WHITE"
+
+
+# file path information (string) -
+
+# absolute path to a folder for screenshots here
+screenshot_folder: "C:\\Path\\To\\Screenshot\\Folder"
+
+
+# discord bot information (string and int) -
+
+# a discord bot's token goes here
+discord_bot_token:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+# a discord channel's id goes here
+discord_channel_id: 0000000000000000000
