@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.WARNING,
                     datefmt='%Y-%m-%d %H:%M:%S')
 
 
-def wait_for_element(driver, config, element_id):
+def wait_for_element(driver: webdriver, config: dict, element_id: str):
     """
     This function waits X seconds until an element appears on a website.
     X seconds is determined by the config file.
@@ -31,7 +31,7 @@ def wait_for_element(driver, config, element_id):
     )
 
 
-def create_parking_permit(driver, config):
+def create_parking_permit(driver: webdriver, config: dict):
     """
     This function creates a parking permit on rpm2park.com for locations WITHOUT a visitor code
     by filling out the website's forms.
@@ -61,7 +61,7 @@ def create_parking_permit(driver, config):
     wait_for_element(driver, config, 'MainContent_btn_Submit').click()
 
 
-def save_screenshot_of_permit(driver, screenshot_file_path, config):
+def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, config: dict):
     """
     This function saves a screenshot of the parking permit.
     :param driver: A browser driver.
@@ -77,7 +77,7 @@ def save_screenshot_of_permit(driver, screenshot_file_path, config):
     driver.save_full_page_screenshot(screenshot_file_path)
 
 
-def schedule_program_to_renew_permit(driver):
+def schedule_program_to_renew_permit(driver: webdriver):
     """
     This function uses Windows Task Scheduler to schedule the program to
     run again when a parking permit expires to automatically renew the permit.
@@ -87,14 +87,14 @@ def schedule_program_to_renew_permit(driver):
     pass
 
 
-def delete_screenshot_of_permit(screenshot_file_path):
+def delete_screenshot_of_permit(screenshot_file_path: str):
     if os.path.exists(screenshot_file_path):
         os.remove(screenshot_file_path)
     else:
         logging.error(f"Could not find and delete {screenshot_file_path}.")
 
 
-async def send_screenshot_in_discord(driver, screenshot_file_path, config):
+async def send_screenshot_in_discord(driver: webdriver, screenshot_file_path: str, config: dict):
     """
     This function uploads a screenshot from the machine to a discord server using a discord bot.
     :param driver: A browser driver.
