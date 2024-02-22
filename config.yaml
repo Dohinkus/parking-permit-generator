@@ -1,4 +1,4 @@
-# WARNING: there's current no checks for bad data types in the config, so only run
+# WARNING: there's currently no checks for bad data types in the config, so only run
 # the program when there's correct data types for normal behavior. Will fix this later...
 
 i_read_the_config_warning: false
