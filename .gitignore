@@ -72,7 +72,8 @@ venv.bak/
 .python-version
 
 # logs
-.log
+*.log
 
-# config
-.yaml
+# config files
+!config.yaml
+*.yaml
