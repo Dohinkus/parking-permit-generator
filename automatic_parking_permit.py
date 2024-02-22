@@ -11,12 +11,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 
-# set up logging
-# Set up basic configuration for logging
-logging.basicConfig(level=logging.WARNING,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
-
 
 def parse_arguments() -> argparse.Namespace:
     """
@@ -25,9 +19,22 @@ def parse_arguments() -> argparse.Namespace:
     object corresponds to a command-line argument
     """
     parser = argparse.ArgumentParser()
+    # allows user to specify a different config file
     parser.add_argument('--config', type=str, default='config.yaml',
                         help='Path to the config file (default: config.yaml)')
+    # allows user to specify logging level as debug or not
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
     return parser.parse_args()
+
+
+def setup_logging(verbose: bool):
+    """
+    This function sets up logging.
+    :param verbose: A bool for enabling verbose logs.
+    :return:
+    """
+    log_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=log_level)
 
 
 def validate_config_file(config_file: str):
@@ -196,13 +203,12 @@ def main():
     :return:
     """
     args = parse_arguments()
+    setup_logging(args.verbose)
 
     logging.info(f'Using config file: {args.config}')
-
     validate_config_file(args.config)
 
     config = load_config(args.config)
-
     validate_config_warning(config)
 
     # Firefox has a full page screenshot function that Chrome lacks, so Firefox is used instead of Chrome
