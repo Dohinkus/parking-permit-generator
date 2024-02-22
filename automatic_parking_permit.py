@@ -39,8 +39,8 @@ def validate_config_file(config_file: str):
     if not os.path.exists(config_file):
         logging.error(f'Config file {config_file} does not exist.')
         sys.exit(1)
-    if not os.path.isfile(config_file):
-        logging.error(f'{config_file} is not a file.')
+    if not os.path.isfile(config_file) or not config_file.endswith('.yaml'):
+        logging.error(f'{config_file} is not a valid YAML file.')
         sys.exit(1)
 
 
