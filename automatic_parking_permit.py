@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import discord
 import logging
@@ -17,12 +18,64 @@ logging.basicConfig(level=logging.WARNING,
                     datefmt='%Y-%m-%d %H:%M:%S')
 
 
+def parse_arguments() -> argparse.Namespace:
+    """
+    This function parses the arguments entered at command line.
+    :return: An argparse.Namespace where each attribute of this
+    object corresponds to a command-line argument
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default='config.yaml',
+                        help='Path to the config file (default: config.yaml)')
+    return parser.parse_args()
+
+
+def validate_config_file(config_file: str):
+    """
+    This function validates that config_file exists and is a file
+    :param config_file: A config file name.
+    :return:
+    """
+    if not os.path.exists(config_file):
+        logging.error(f'Config file {config_file} does not exist.')
+        sys.exit(1)
+    if not os.path.isfile(config_file):
+        logging.error(f'{config_file} is not a file.')
+        sys.exit(1)
+
+
+def load_config(config_file: str) -> dict:
+    """
+    This function loads the contents of config_file into a dict.
+    :param config_file: A config file name.
+    :return: A dict filled by a config file.
+    """
+    try:
+        with open(config_file, 'r') as file:
+            return yaml.safe_load(file)
+    except yaml.YAMLError as e:
+        logging.error(f"Error parsing YAML file: {e}")
+        sys.exit(1)
+
+
+def validate_config_warning(config: dict):
+    """
+    This function validates that the user read the config warning.
+    :param config: A dict filled by a config file.
+    :return:
+    """
+    if not config['i_read_the_config_warning']:
+        print("Did not set up config correctly, read debug.log for details")
+        logging.error(f"Read the config warning and then set the bool under it to true.")
+        sys.exit(1)
+
+
 def wait_for_element(driver: webdriver, config: dict, element_id: str):
     """
     This function waits X seconds until an element appears on a website.
     X seconds is determined by the config file.
     :param driver: A browser driver.
-    :param config: A dict filled by config.yaml.
+    :param config: A dict filled by a config file.
     :param element_id: An ID of an HTML attribute on a website.
     :return:
     """
@@ -36,7 +89,7 @@ def create_parking_permit(driver: webdriver, config: dict):
     This function creates a parking permit on rpm2park.com for locations WITHOUT a visitor code
     by filling out the website's forms.
     :param driver: The browser driver.
-    :param config: A dict filled by config.yaml.
+    :param config: A dict filled by a config file.
     :return:
     """
     # opens the property (location) dropdown and selects 'config.property_location' option
@@ -66,7 +119,7 @@ def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, conf
     This function saves a screenshot of the parking permit.
     :param driver: A browser driver.
     :param screenshot_file_path: A screenshot filename (needs to include .png extension).
-    :param config: A dict filled by config.yaml.
+    :param config: A dict filled by a config file.
     :return:
     """
     # waits until the parking permit's QR Code is visible to take a screenshot of it
@@ -133,7 +186,7 @@ async def send_screenshot_in_discord(driver: webdriver, screenshot_file_path: st
 
 def main():
     """
-    This program loads the config.yaml file's data into a dict,
+    This program loads the --config argument's config file's data into a dict,
     creates a free visitor's parking permit on rpm2park.com,
     optionally saves a screenshot of the permit to the machine,
     optionally uploads the screenshot to a discord server,
@@ -142,21 +195,15 @@ def main():
     and then finally closes itself.
     :return:
     """
-    try:
-        config = {}
-        with open('config.yaml', 'r') as file:
-            config = yaml.safe_load(file)
-    except FileNotFoundError:
-        logging.error(f"Config file '{config}' not found.")
-        sys.exit(1)
-    except yaml.YAMLError as e:
-        logging.error(f"Error parsing YAML file: {e}")
-        sys.exit(1)
+    args = parse_arguments()
 
-    if not config['i_read_the_config_warning']:
-        print("Did not set up config correctly, read debug.log for details")
-        logging.error(f"Read the config warning and then set the bool under it to true.")
-        sys.exit(1)
+    logging.info(f'Using config file: {args.config}')
+
+    validate_config_file(args.config)
+
+    config = load_config(args.config)
+
+    validate_config_warning(config)
 
     # Firefox has a full page screenshot function that Chrome lacks, so Firefox is used instead of Chrome
     with webdriver.Firefox() as driver:
