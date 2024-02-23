@@ -125,6 +125,16 @@ def get_parking_permit_expiration_time(driver: webdriver):
     pass
 
 
+def generate_screenshot_file_path(folder_path: str) -> str:
+    """
+    This function generates the unique name of a parking permit screenshot.
+    :param folder_path: An absolute path to a folder for the screenshot.
+    :return:
+    """
+    current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    return f"{folder_path}\\rpm2park_parking_permit_{current_time}.png"
+
+
 def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, config: dict):
     """
     This function saves a screenshot of the parking permit.
@@ -228,8 +238,7 @@ def main():
 
         # parking_permit_expiration_time = get_parking_permit_expiration_time(driver)
 
-        current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        screenshot_file_path = f"{config['screenshot_folder']}\\rpm2park_parking_permit_{current_time}.png"
+        screenshot_file_path = generate_screenshot_file_path(config['screenshot_folder'])
 
         if config['save_screenshot_of_permit']:
             save_screenshot_of_permit(driver, screenshot_file_path, config)
