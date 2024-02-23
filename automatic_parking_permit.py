@@ -77,16 +77,16 @@ def validate_config_warning(i_read_the_config_warning: bool):
         sys.exit(1)
 
 
-def wait_for_element(driver: webdriver, config: dict, element_id: str):
+def wait_for_element(driver: webdriver, timeout_duration: int, element_id: str):
     """
     This function waits X seconds until an element appears on a website.
     X seconds is determined by the config file.
     :param driver: A browser driver.
-    :param config: A dict filled by a config file.
+    :param timeout_duration: The number of seconds until a TimeoutException is raised.
     :param element_id: An ID of an HTML attribute on a website.
     :return:
     """
-    return WebDriverWait(driver, config['timeout']).until(
+    return WebDriverWait(driver, timeout_duration).until(
         EC.visibility_of_element_located((By.ID, element_id))
     )
 
@@ -100,25 +100,27 @@ def create_parking_permit(driver: webdriver, config: dict):
     :return:
     """
     # opens the property (location) dropdown and selects 'config.property_location' option
-    (Select(wait_for_element(driver, config, 'MainContent_ddl_Property'))
+    (Select(wait_for_element(driver, config['timeout'], 'MainContent_ddl_Property'))
      .select_by_visible_text(config['property_location']))
 
     # remaining functions fill out text boxes, click next buttons, checks boxes, and clicks submit button
 
     # rpm2park.com page 1
-    wait_for_element(driver, config, 'MainContent_txt_Apartment').send_keys(config['apartment_number_str'])
-    wait_for_element(driver, config, 'MainContent_btn_PropertyNext').click()
+    (wait_for_element(driver, config['timeout'], 'MainContent_txt_Apartment')
+     .send_keys(config['apartment_number_str']))
+    wait_for_element(driver, config['timeout'], 'MainContent_btn_PropertyNext').click()
     # rpm2park.com page 2
-    wait_for_element(driver, config, 'MainContent_txt_Plate').send_keys(config['plate_number'])
-    wait_for_element(driver, config, 'MainContent_txt_Make').send_keys(config['vehicle_make'])
-    wait_for_element(driver, config, 'MainContent_txt_Model').send_keys(config['vehicle_model'])
-    wait_for_element(driver, config, 'MainContent_txt_Color').send_keys(config['vehicle_color'])
-    wait_for_element(driver, config, 'MainContent_btn_Vehicle_Next').click()
-    wait_for_element(driver, config, 'MainContent_btn_Auth_Next').click()
+    wait_for_element(driver, config['timeout'], 'MainContent_txt_Plate').send_keys(config['plate_number'])
+    wait_for_element(driver, config['timeout'], 'MainContent_txt_Make').send_keys(config['vehicle_make'])
+    wait_for_element(driver, config['timeout'], 'MainContent_txt_Model').send_keys(config['vehicle_model'])
+    wait_for_element(driver, config['timeout'], 'MainContent_txt_Color').send_keys(config['vehicle_color'])
+    wait_for_element(driver, config['timeout'], 'MainContent_btn_Vehicle_Next').click()
+    wait_for_element(driver, config['timeout'], 'MainContent_btn_Auth_Next').click()
     # rpm2park.com page 3
-    wait_for_element(driver, config, 'MainContent_txt_Review_PlateNumber').send_keys(config['plate_number'])
-    wait_for_element(driver, config, 'MainContent_cb_Confirm').click()
-    wait_for_element(driver, config, 'MainContent_btn_Submit').click()
+    (wait_for_element(driver, config['timeout'], 'MainContent_txt_Review_PlateNumber')
+     .send_keys(config['plate_number']))
+    wait_for_element(driver, config['timeout'], 'MainContent_cb_Confirm').click()
+    wait_for_element(driver, config['timeout'], 'MainContent_btn_Submit').click()
 
 
 def get_parking_permit_expiration_time(driver: webdriver):
@@ -144,9 +146,7 @@ def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, conf
     :return:
     """
     # waits until the parking permit's QR Code is visible to take a screenshot of it
-    WebDriverWait(driver, config['timeout']).until(
-        EC.visibility_of_element_located((By.ID, 'MainContent_img_QRC'))
-    )
+    wait_for_element(driver, config['timeout'], 'MainContent_img_QRC')
 
     driver.save_full_page_screenshot(screenshot_file_path)
 
