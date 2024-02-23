@@ -82,7 +82,8 @@ def wait_for_element(driver: webdriver, timeout_duration: int, element_id: str):
     This function waits X seconds until an element appears on a website.
     X seconds is determined by the config file.
     :param driver: A browser driver.
-    :param timeout_duration: The number of seconds until a TimeoutException is raised.
+    :param timeout_duration: The number of seconds until a TimeoutException is raised if the
+    element has not loaded.
     :param element_id: An ID of an HTML attribute on a website.
     :return:
     """
@@ -123,8 +124,19 @@ def create_parking_permit(driver: webdriver, config: dict):
     wait_for_element(driver, config['timeout'], 'MainContent_btn_Submit').click()
 
 
-def get_parking_permit_expiration_time(driver: webdriver):
-    pass
+def get_parking_permit_expiration_date(driver: webdriver, timeout_duration: int) -> datetime:
+    """
+    This function grabs a visible parking permit's expiration date from rpm2park.com
+    :param driver: A browser driver.
+    :param timeout_duration: The number of seconds until a TimeoutException is raised if the
+    element has not loaded.
+    :return:
+    """
+    # waits for permit's expiration date to appear
+    date_str = wait_for_element(driver, timeout_duration, 'MainContent_lbl_Results_Expires').text
+    # specific date format rpm2park.com uses for displaying the expiration date, e.g. '2/22/2024 6:52:05 PM'
+    date_format = '%m/%d/%Y %I:%M:%S %p'
+    return datetime.strptime(date_str, date_format)
 
 
 def generate_screenshot_file_path(folder_path: str) -> str:
@@ -151,11 +163,11 @@ def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, conf
     driver.save_full_page_screenshot(screenshot_file_path)
 
 
-def schedule_program_to_renew_permit(driver: webdriver):
+def schedule_program_to_renew_permit(parking_permit_expiration_date: datetime):
     """
     This function uses Windows Task Scheduler to schedule the program to
     run again when a parking permit expires to automatically renew the permit.
-    :param driver: A browser driver.
+    :param parking_permit_expiration_date: A parking permit's expiration date.
     :return:
     """
     pass
@@ -236,7 +248,7 @@ def main():
 
         create_parking_permit(driver, config)
 
-        # parking_permit_expiration_time = get_parking_permit_expiration_time(driver)
+        parking_permit_expiration_date = get_parking_permit_expiration_date(driver, config['timeout'])
 
         screenshot_file_path = generate_screenshot_file_path(config['screenshot_folder'])
 
@@ -246,8 +258,8 @@ def main():
         if config['send_screenshot_in_discord']:
             asyncio.run(send_screenshot_in_discord(driver, screenshot_file_path, config))
 
-        if config['automatically_renew_permit']:
-            schedule_program_to_renew_permit(driver)
+    if config['automatically_renew_permit']:
+        schedule_program_to_renew_permit(parking_permit_expiration_date)
 
 
 if __name__ == '__main__':
