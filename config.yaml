@@ -24,7 +24,6 @@ send_screenshot_in_discord: false
 
 # if true, the program schedule's itself to run again when the permit is set to expire using Task Scheduler
 # if false, no action occurs
-# NOT IMPLEMENTED YET
 automatically_renew_permit: false
 
 

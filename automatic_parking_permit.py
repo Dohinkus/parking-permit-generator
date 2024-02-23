@@ -3,6 +3,7 @@ import asyncio
 import discord
 import logging
 import os
+import subprocess
 import sys
 import yaml
 from datetime import datetime
@@ -21,9 +22,9 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     # allows user to specify a different config file
     parser.add_argument('--config', type=str, default='config.yaml',
-                        help='Path to the config file (default: config.yaml)')
+                        help="Path to the config file (default: config.yaml)")
     # allows user to specify logging level as debug or not
-    parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
+    parser.add_argument('--verbose', action='store_true', help="Enable verbose logging")
     return parser.parse_args()
 
 
@@ -44,10 +45,10 @@ def validate_config_file(config_file: str):
     :return:
     """
     if not os.path.exists(config_file):
-        logging.error(f'Config file {config_file} does not exist.')
+        logging.error(f"Config file {config_file} does not exist.")
         sys.exit(1)
     if not os.path.isfile(config_file) or not config_file.endswith('.yaml'):
-        logging.error(f'{config_file} is not a valid YAML file.')
+        logging.error(f"{config_file} is not a valid YAML file.")
         sys.exit(1)
 
 
@@ -146,7 +147,7 @@ def generate_screenshot_file_path(folder_path: str) -> str:
     :return:
     """
     current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    return f"{folder_path}\\rpm2park_parking_permit_{current_time}.png"
+    return f'{folder_path}\\rpm2park_parking_permit_{current_time}.png'
 
 
 def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, config: dict):
@@ -163,14 +164,53 @@ def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, conf
     driver.save_full_page_screenshot(screenshot_file_path)
 
 
-def schedule_program_to_renew_permit(parking_permit_expiration_date: datetime):
+def generate_command_line_arguments_as_str(args: argparse.Namespace) -> str:
+    """
+    This function generates a str from the entered command line arguments.
+    :param args: An argparse.Namespace filled with command line arguments.
+    :return: A str of the command line arguments.
+    """
+    # Convert the arguments to a string
+    arg_str = ''
+    if args.config != 'config.yaml':
+        arg_str += f'--config {args.config} '
+    if args.verbose:
+        arg_str += '--verbose '
+    return arg_str.strip()
+
+
+def schedule_program_to_renew_permit(parking_permit_expiration_date: datetime, args: argparse.Namespace):
     """
     This function uses Windows Task Scheduler to schedule the program to
     run again when a parking permit expires to automatically renew the permit.
     :param parking_permit_expiration_date: A parking permit's expiration date.
+    :param args: An argparse.Namespace filled with command line arguments.
     :return:
     """
-    pass
+    task_name = 'AutomaticParkingPermitRenewal'
+    program_path = os.path.abspath(__file__)
+    program_path_escaped = program_path.replace("\\", "\\\\")
+    command_line_args = generate_command_line_arguments_as_str(args)
+
+    # if the parking permit expires in the future
+    if parking_permit_expiration_date > datetime.now():
+        # reformat the date and time into the proper string formats for Windows Task Scheduler
+        formatted_expiration_date = parking_permit_expiration_date.strftime('%m/%d/%Y')
+        formatted_expiration_time = parking_permit_expiration_date.strftime('%H:%M')
+        subprocess.run(['schtasks',
+                        '/create',
+                        '/tn', task_name,
+                        '/tr', f'"python {program_path_escaped} {command_line_args}"',
+                        '/sc', 'once',
+                        '/sd', formatted_expiration_date,
+                        '/st', formatted_expiration_time,
+                        '/rl', 'HIGHEST',
+                        '/f'])
+    else:
+        # if the newly created parking permit already expired, something is very wrong
+        logging.error("An unknown error has occurred where the parking permit has already expired.\n"
+                      "The program will NOT automatically run again.")
+        sys.exit(1)
 
 
 def delete_screenshot_of_permit(screenshot_file_path: str):
@@ -207,11 +247,11 @@ async def send_screenshot_in_discord(driver: webdriver, screenshot_file_path: st
             and sends the screenshot.
             :return:
             """
-            print(f'Logged in as {client.user}')
+            logging.info(f"Logged in as {client.user}")
             channel = client.get_channel(config['discord_channel_id'])
-            print(f'Sending PNG file named: {screenshot_file_path}')
+            logging.info(f"Sending PNG file to discord channel from {screenshot_file_path}")
             await channel.send(file=discord.File(screenshot_file_path))
-            print(f'Logging off of {client.user}')
+            logging.info(f"Logging off of {client.user}")
             await client.http.close()
             await client.close()
 
@@ -236,7 +276,7 @@ def main():
     args = parse_arguments()
     setup_logging(args.verbose)
 
-    logging.info(f'Using config file: {args.config}')
+    logging.info(f"Using config file: {args.config}")
     validate_config_file(args.config)
 
     config = load_config(args.config)
@@ -259,7 +299,7 @@ def main():
             asyncio.run(send_screenshot_in_discord(driver, screenshot_file_path, config))
 
     if config['automatically_renew_permit']:
-        schedule_program_to_renew_permit(parking_permit_expiration_date)
+        schedule_program_to_renew_permit(parking_permit_expiration_date, args)
 
 
 if __name__ == '__main__':
