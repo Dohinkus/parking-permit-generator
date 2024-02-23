@@ -121,6 +121,10 @@ def create_parking_permit(driver: webdriver, config: dict):
     wait_for_element(driver, config, 'MainContent_btn_Submit').click()
 
 
+def get_parking_permit_expiration_time(driver: webdriver):
+    pass
+
+
 def save_screenshot_of_permit(driver: webdriver, screenshot_file_path: str, config: dict):
     """
     This function saves a screenshot of the parking permit.
@@ -221,6 +225,8 @@ def main():
         driver.get('https://rpm2park.com/visitors/')
 
         create_parking_permit(driver, config)
+
+        # parking_permit_expiration_time = get_parking_permit_expiration_time(driver)
 
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         screenshot_file_path = f"{config['screenshot_folder']}\\rpm2park_parking_permit_{current_time}.png"
