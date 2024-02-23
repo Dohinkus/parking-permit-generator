@@ -237,6 +237,9 @@ async def send_screenshot_in_discord(driver: webdriver, screenshot_file_path: st
     # this screenshot will be deleted once the file is sent on discord
     if not config['save_screenshot_of_permit']:
         save_screenshot_of_permit(driver, screenshot_file_path, config)
+    else:
+        # website is no longer needed to be visible at this point
+        driver.close()
 
     async with discord.Client(intents=discord.Intents.default()) as client:
 
