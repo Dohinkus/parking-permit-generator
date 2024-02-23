@@ -65,13 +65,13 @@ def load_config(config_file: str) -> dict:
         sys.exit(1)
 
 
-def validate_config_warning(config: dict):
+def validate_config_warning(i_read_the_config_warning: bool):
     """
     This function validates that the user read the config warning.
-    :param config: A dict filled by a config file.
+    :param i_read_the_config_warning: A dict filled by a config file.
     :return:
     """
-    if not config['i_read_the_config_warning']:
+    if not i_read_the_config_warning:
         print("Did not set up config correctly, read debug.log for details")
         logging.error(f"Read the config warning and then set the bool under it to true.")
         sys.exit(1)
@@ -228,7 +228,7 @@ def main():
     validate_config_file(args.config)
 
     config = load_config(args.config)
-    validate_config_warning(config)
+    validate_config_warning(config['i_read_the_config_warning'])
 
     # Firefox has a full page screenshot function that Chrome lacks, so Firefox is used instead of Chrome
     with webdriver.Firefox() as driver:
