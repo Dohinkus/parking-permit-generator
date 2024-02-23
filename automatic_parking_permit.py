@@ -148,6 +148,11 @@ def schedule_program_to_renew_permit(driver: webdriver):
 
 
 def delete_screenshot_of_permit(screenshot_file_path: str):
+    """
+    This function deletes a parking permit screenshot.
+    :param screenshot_file_path: A file path of the screenshot.
+    :return:
+    """
     if os.path.exists(screenshot_file_path):
         os.remove(screenshot_file_path)
     else:
