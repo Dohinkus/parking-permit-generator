@@ -1,4 +1,4 @@
-# AutoRPM2PARK
+# parking-permit-generator
 Automatically creates a parking permit on rpm2park.com,
 saves a screenshot of the permit to the PC,
 sends the screenshot in a discord channel,
